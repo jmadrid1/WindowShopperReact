@@ -7,21 +7,21 @@ import pw_private from '../../assets/password_private.png';
 const { width } = Dimensions.get('screen')
 
 type IProps = {
-    isPasswordPrivate: boolean;
     placeholder: string;
     value: string;
     onChange: (text) => void;
-    setPasswordPrivate: Dispatch<SetStateAction<boolean>>;
+    isPasswordVisible: boolean;
+    setPasswordAsVisible: Dispatch<SetStateAction<boolean>>;
 }
 
 const PasswordForm = (props: IProps) => {
-    const { isPasswordPrivate, placeholder, value, onChange, setPasswordPrivate } = props;
+    const { placeholder, value, onChange, isPasswordVisible, setPasswordAsVisible } = props;
 
     return (
         <View style={styles.container} >
-            <TextInput style={styles.textInput} secureTextEntry={!isPasswordPrivate} placeholder={placeholder} autoCapitalize='none' value={value} onChangeText={(text) => onChange(text)} />
-            <TouchableOpacity style={styles.searchButton} onPress={() => setPasswordPrivate(!isPasswordPrivate)}>
-                <Image style={styles.searchIcon} source={isPasswordPrivate ? pw_private : pw_visible}/>
+            <TextInput style={styles.textInput} secureTextEntry={!isPasswordVisible} placeholder={placeholder} autoCapitalize='none' value={value} onChangeText={(text) => onChange(text)} />
+            <TouchableOpacity style={styles.searchButton} onPress={() => setPasswordAsVisible(!isPasswordVisible)}>
+                <Image style={styles.searchIcon} source={isPasswordVisible ? pw_private : pw_visible}/>
             </TouchableOpacity>
         </View>
     );
