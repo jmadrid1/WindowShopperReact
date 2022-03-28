@@ -2,26 +2,18 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { CartItem } from '../../types/CartItem';
 import close from '../../assets/ic_close.png';
-import 'firebase/database';
-import { initializeApp } from 'firebase/app';
-import { getDatabase } from "firebase/database";
-import firebaseConfig from '../../util/Firebase';
 
 const { width } = Dimensions.get('screen');
 
 interface IProps {
     item: CartItem;
-    removeFromCart: (id, quantity) => void;
+    removeItem: (id) => void;
     navigation: any;
 }
 
 const CartRow = (props: IProps) => {
     const { item } = props;
-    const { navigation } = props;
-    const { removeFromCart } = props;
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    const { removeItem } = props;
 
     let name: string = item.title
     let imgUrl: string = item.thumbnail
@@ -35,7 +27,7 @@ const CartRow = (props: IProps) => {
             <View style={styles.innerContainer}>
                 <View style={styles.headerContainer} >
                     <Text style={styles.title}>{name}</Text>
-                    <TouchableOpacity style={styles.deleteButton} onPress={() => removeFromCart(item.id, item.quantity)}>
+                    <TouchableOpacity style={styles.deleteButton} onPress={() => removeItem(item)}>
                         <Image style={styles.deleteIcon} source={close} />
                     </TouchableOpacity>
                 </View>
