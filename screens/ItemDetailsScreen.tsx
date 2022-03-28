@@ -43,7 +43,6 @@ export const ItemDetailsScreen = (props: IProps) => {
 
     const addItemCart = (selectedItem, selectedSize, selectedQuantity) => {
         addToCart(selectedItem, selectedSize, selectedQuantity)
-        ToastAndroid.show(`${selectedItem.title} Added To Cart`, ToastAndroid.SHORT)
     }
 
     let priceString = '$' + String(selectedItem.price)
@@ -177,16 +176,6 @@ const styles = StyleSheet.create({
         justifyContent: 'flex-end',
         marginTop: 3,
         marginLeft: 60,
-    },
-
-    searchBarContainer: {
-        flexDirection: 'row',
-        flex: 1,
-        minHeight: 70,
-        maxHeight: 70,
-        backgroundColor: '#A846A0',
-        justifyContent: 'center',
-        alignItems: 'flex-start'
     },
 
     title: {
