@@ -5,7 +5,7 @@ import ItemRow from '../components/itemRow/ItemRow'
 import AnimationView from '../components/animationView/AnimationView';
 import 'firebase/database';
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, onValue } from "firebase/database";
+import { getDatabase, ref, get, child } from "firebase/database";
 import { FirebaseDatabase } from '../util/Constants';
 import firebaseConfig from '../util/Firebase';
 
@@ -16,18 +16,13 @@ interface IProps {
 
 export const ShopScreen = (props: IProps) => {
     const { navigation } = props;
-
     const [items, setItems] = useState<Item[]>([]);
     const [isLoading, setLoading] = useState(true)
+    initializeApp(firebaseConfig);
 
     useEffect(() => {
+        setLoading(true);
         getClothes();
-    }, [])
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    useEffect(() => {
         const onBackPress = () => {
             BackHandler.exitApp()
             return true
@@ -36,29 +31,39 @@ export const ShopScreen = (props: IProps) => {
         return () => BackHandler.removeEventListener("hardwareBackPress", onBackPress)
     }, [])
 
-    const firebase_inventory = FirebaseDatabase.inventoryKey;
-
-    const getClothes = () => {
-        const inventoryRef = ref(db, firebase_inventory);
+    const getClothes = async () => {
+        setLoading(true)
         let itemList: Item[] = [];
+        try {
+            const inventoryRef = ref(getDatabase());
+            get(child(inventoryRef, FirebaseDatabase.inventoryKey)).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    if (data != null) {
+                        for (const key of Object.keys(data)) {
+                            const it: Item = data[key];
 
-        onValue(inventoryRef, (snapshot) => {
-            const data = snapshot.val();
-            for (const key of Object.keys(data)) {
-                const it: Item = data[key];
-
-                let item: Item = {
-                    id: it.id,
-                    title: it.title,
-                    summary: it.summary,
-                    image: it.image,
-                    price: it.price,
+                            let item: Item = {
+                                id: it.id,
+                                title: it.title,
+                                summary: it.summary,
+                                image: it.image,
+                                price: it.price,
+                            }
+                            itemList.push(item)
+                        }
+                    }
+                    setItems(itemList)
                 }
-                itemList.push(item)
-            }
+            }).catch((error) => {
+                console.error(error);
+            });
+            setLoading(false)
+        } catch (e) {
+            console.log(e);
             setItems(itemList)
             setLoading(false)
-        });
+        }
     }
 
     const renderItem = ({ item }) => {
@@ -72,16 +77,16 @@ export const ShopScreen = (props: IProps) => {
     return (
         <View style={styles.container}>
             {!isLoading ? (
-            <View style={styles.scrollViewContainer} >
-                {items.length > 0 &&
-                    <FlatList
-                        horizontal={false}
-                        data={items}
-                        numColumns={2}
-                        renderItem={renderItem}
-                    />
-                }
-            </View>) : (
+                <View style={styles.scrollViewContainer} >
+                    {items.length > 0 &&
+                        <FlatList
+                            horizontal={false}
+                            data={items}
+                            numColumns={2}
+                            renderItem={renderItem}
+                        />
+                    }
+                </View>) : (
                 <View style={styles.container}>
                     <View style={styles.innerContainer}>
                         <AnimationView option={1} />
@@ -113,16 +118,6 @@ const styles = StyleSheet.create({
     scrollViewContainer: {
         height: '100%',
         width: '100%'
-    },
-
-    searchBarContainer: {
-        flexDirection: 'row',
-        flex: 1,
-        minHeight: 70,
-        maxHeight: 70,
-        backgroundColor: '#A846A0',
-        justifyContent: 'center',
-        alignItems: 'center'
     },
 
     title: {
