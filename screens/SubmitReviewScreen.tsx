@@ -1,17 +1,16 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { StatusBar, View, Text, StyleSheet, Dimensions, Image } from 'react-native';
 import { StackActions } from '@react-navigation/native';
 import icon from '../assets/ic_add_review.png'
 import { TextInput } from 'react-native-gesture-handler';
-import { Review } from '../types/Review';
-import 'firebase/database';
-import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, push, child, update } from "firebase/database";
-import firebaseConfig from '../util/Firebase';
 import { Item } from '../types/Item';
 import RoundedButton from '../components/roundedButton/RoundedButton';
 import BackButton from '../components/backButton/BackButton';
 import { Rating } from 'react-native-ratings';
+import { initializeApp } from 'firebase/app';
+import 'firebase/database';
+import firebaseConfig from '../util/Firebase';
+import { FirebaseContext } from '../context/FirebaseProvider';
 
 const { width } = Dimensions.get('screen')
 
@@ -27,35 +26,12 @@ export const SubmitReviewScreen = (props: IProps) => {
     const [inputText, setInputText] = useState('')
     const [isSubmitButtonEnabled, setSubmitButtonAsEnabled] = useState(false)
     const [rating, setRating] = useState(3)
+    const { submitUserReview } = useContext(FirebaseContext);
 
     const popAction = StackActions.pop(1);
     const popBackToDetails = StackActions.pop(2);
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    const submitReview = () => {
-        const KEY_INVENTORY = "/inventory/"
-        let ITEM_ID = selectedItem.id.toString();
-        let KEY_REVIEWS = '/reviews';
-        const path = KEY_INVENTORY + ITEM_ID + KEY_REVIEWS
-
-        var currentDate = new Date().toLocaleDateString('en-US');
-
-        const review: Review = {
-            id: ITEM_ID,
-            comment: inputText,
-            date: currentDate,
-            rating: '40.00',
-        };
-
-        const newReviewKey = push(child(ref(db), path)).key;
-
-        const updates = {};
-        updates[path + '/' + newReviewKey] = review;
-
-        return update(ref(db), updates);
-    }
+    initializeApp(firebaseConfig);
 
     const onInputTextChange = (text) => {
         if (text.length < 1) {
@@ -68,6 +44,11 @@ export const SubmitReviewScreen = (props: IProps) => {
 
     const ratingCompleted = (rating) => {
         setRating(rating)
+    }
+
+    const submitReview = async (selectedItem, inputText, rating, navigation) => {
+        submitUserReview(selectedItem, inputText, rating, navigation)
+        navigation.dispatch(popBackToDetails)
     }
 
     return (
@@ -92,7 +73,7 @@ export const SubmitReviewScreen = (props: IProps) => {
                     <Text style={styles.characterCount}>{inputText.length}/125</Text>
                 </View>
                 <TextInput style={styles.textInput} placeholder='What are your thoughts?' onChangeText={(text) => onInputTextChange(text)} />
-                <RoundedButton enabled={isSubmitButtonEnabled} buttonText='Submit' buttonTextColor='white' buttonColor='black' onPress={() => submitReview } />
+                <RoundedButton enabled={isSubmitButtonEnabled} buttonText='Submit' buttonTextColor='white' buttonColor='black' onPress={() => submitReview(selectedItem, inputText, rating, navigation)} />
             </View>
         </View>
     );
