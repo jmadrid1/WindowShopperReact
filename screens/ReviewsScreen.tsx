@@ -9,7 +9,7 @@ import BackButton from '../components/backButton/BackButton';
 import AnimationView from '../components/animationView/AnimationView';
 import 'firebase/database';
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, onValue } from "firebase/database";
+import { getDatabase, ref, get, child } from "firebase/database";
 import firebaseConfig from '../util/Firebase';
 import { FirebaseContext } from '../context/FirebaseProvider'
 
@@ -24,54 +24,59 @@ interface IProps {
 export const ReviewsScreen = (props: IProps) => {
     const { navigation } = props;
     const { selectedItem } = props.route.params
-
     const [reviews, setReviews] = useState<Review[]>([]);
-    const [isLoading, setLoading] = useState(true)
-
+    const [isLoading, setIsLoading] = useState(true)
     const popAction = StackActions.pop(1);
     const { user } = useContext(FirebaseContext);
 
     useEffect(() => {
+        setIsLoading(true)
         getReviews();
     }, [])
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    initializeApp(firebaseConfig);
 
-    let KEY_INVENTORY = '/inventory/';
-    let ITEM_ID = String(selectedItem.id);
-    let KEY_REVIEWS = '/reviews';
-    let path = KEY_INVENTORY + ITEM_ID + KEY_REVIEWS
-
-    const getReviews = () => {
-        let reviewRef = ref(db, path)
-
+    const getReviews = async () => {
+        setIsLoading(true)
+        const KEY_INVENTORY = '/inventory/';
+        const ITEM_ID = String(selectedItem.id);
+        const KEY_REVIEWS = '/reviews';
+        const path = KEY_INVENTORY + ITEM_ID + KEY_REVIEWS
         let reviewList: Review[] = [];
-
-        onValue(reviewRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data != null) {
-                for (const key of Object.keys(data)) {
-                    const it: Review = data[key];
-                    let review: Review = {
-                        id: it.id,
-                        comment: it.comment,
-                        date: it.date,
-                        rating: it.rating,
+        try {
+            const reviewRef = ref(getDatabase());
+            get(child(reviewRef, path)).then((snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    if (data != null) {
+                        for (const key of Object.keys(data)) {
+                            const it: Review = data[key];
+                            let review: Review = {
+                                id: key,
+                                comment: it.comment,
+                                date: it.date,
+                                rating: it.rating,
+                            }
+                            reviewList.push(review)
+                        }
                     }
-                    reviewList.push(review)
+                    setReviews(reviewList)
                 }
-            }
+            }).catch((error) => {
+                console.error(error);
+                setReviews(reviewList)
+            });
+            setIsLoading(false)
+        } catch (e) {
+            console.log(e);
             setReviews(reviewList)
-            setLoading(false)
-        });
+            setIsLoading(false)
+        }
     }
 
     const renderItem = ({ item }) => {
         return (
-            <View key={item.id}>
-                <ReviewRow review={item} />
-            </View>
+            <ReviewRow key={item.id} review={item} />
         );
     };
 
@@ -79,7 +84,7 @@ export const ReviewsScreen = (props: IProps) => {
         <View style={styles.container}>
             {!isLoading ? (
                 <>
-                    <View style={styles.searchBarContainer}  >
+                    <View style={styles.toolBarContainer}  >
                         <BackButton backArrowColor='black' onPress={() => navigation.dispatch(popAction)} />
                         <TouchableOpacity style={styles.addButton} onPress={user ? () => navigation.navigate('SubmitReview', { selectedItem: selectedItem }) : null}>
                             <Image style={styles.addIcon} source={user ? add : null} />
@@ -155,7 +160,16 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
 
-    searchBarContainer: {
+    title: {
+        fontSize: 18,
+        width: 190,
+        fontWeight: 'bold',
+        color: 'black',
+        textAlign: 'center',
+        paddingTop: 3
+    },
+
+    toolBarContainer: {
         flexDirection: 'row',
         display: 'flex',
         width: width,
@@ -166,15 +180,6 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         justifyContent: 'space-between',
         alignItems: 'center'
-    },
-
-    title: {
-        fontSize: 18,
-        width: 190,
-        fontWeight: 'bold',
-        color: 'black',
-        textAlign: 'center',
-        paddingTop: 3
     },
 
 })
