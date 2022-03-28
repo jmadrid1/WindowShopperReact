@@ -38,11 +38,10 @@ export const AccountScreen = (props: IProps) => {
         let KEY_USERS = FirebaseDatabase.usersKey;
         let USER_ID = user.uid
         let usersPath = KEY_USERS + USER_ID
-        let reviewRef = ref(db, usersPath)
+        let userRef = ref(db, usersPath)
 
-        onValue(reviewRef, (snapshot) => {
+        onValue(userRef, (snapshot) => {
             const data = snapshot.val();
-
             let account: Account = {
                 username: data.username,
                 email: data.email,
