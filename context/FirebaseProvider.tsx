@@ -2,16 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { getAuth, signInWithEmailAndPassword, signOut, createUserWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 import firebaseConfig from '../util/Firebase';
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, update } from "firebase/database";
+import { child, getDatabase, push, ref, set, update } from "firebase/database";
 import { Account } from '../types/Account';
-import { CartItem } from '../types/CartItem';
 import { FirebaseDatabase } from '../util/Constants';
+import { ToastAndroid } from 'react-native';
+import { Review } from '../types/Review';
 
 export const FirebaseContext = React.createContext(undefined);
 
 export const FirebaseProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getDatabase(app);
@@ -38,9 +38,8 @@ export const FirebaseProvider = ({ children }) => {
       password: password,
     };
 
-    let USER_ID = uid
-    let usersPath = KEY_USERS + USER_ID
-    console.log(usersPath)
+    const USER_ID = uid
+    const usersPath = KEY_USERS + USER_ID
 
     const updates = {};
     updates[usersPath] = account;
@@ -48,23 +47,66 @@ export const FirebaseProvider = ({ children }) => {
     return update(ref(db), updates);
   }
 
-  const addToCart = (selectedItem, selectedSize, selectedQuantity) => {
-    const cartItem: CartItem = {
-      id: selectedItem.id,
-      title: selectedItem.title,
-      size: selectedSize,
-      price: selectedItem.price,
-      thumbnail: selectedItem.image,
-      quantity: Number(selectedQuantity)
-    };
-    let USER_ID = user.uid
-    let ITEM_ID = selectedItem.id
-    let cartPath = KEY_USERS + USER_ID + KEY_CART + ITEM_ID
+  const addItemToCart = async (selectedItem, selectedSize, selectedQuantity) => {
+    try {
+      const USER_ID = user.uid
+      const ITEM_ID = selectedItem.id
+      const cartPath = KEY_USERS + USER_ID + KEY_CART
 
-    const updates = {};
-    updates[cartPath] = cartItem;
+      const db = getDatabase();
+      set(ref(db, cartPath + ITEM_ID), {
+        id: selectedItem.id,
+        title: selectedItem.title,
+        size: selectedSize,
+        price: selectedItem.price,
+        thumbnail: selectedItem.image,
+        quantity: Number(selectedQuantity)
+      });
+      ToastAndroid.show(`${selectedItem.title} Added To Cart`, ToastAndroid.SHORT)
+    } catch (e) {
+      console.log(e);
+    }
+  }
 
-    return update(ref(db), updates);
+  const updateCartItem = async (item) => {
+    try {
+      const USER_ID = user.uid;
+      const ITEM_ID = item.id;
+      const cartPath = KEY_USERS + USER_ID + KEY_CART
+
+      const db = getDatabase();
+      set(ref(db, cartPath + ITEM_ID),
+        null
+      );
+    } catch (e) {
+      console.log(e);
+    }
+  }
+
+  const submitReview = async (item, inputText, rating) => {
+    try {
+      const KEY_INVENTORY = "/inventory/"
+      let ITEM_ID = item.id.toString();
+      let KEY_REVIEWS = '/reviews';
+      const path = KEY_INVENTORY + ITEM_ID + KEY_REVIEWS
+
+      const currentDate = new Date().toLocaleDateString('en-US');
+
+      const review: Review = {
+        id: ITEM_ID,
+        comment: inputText,
+        date: currentDate,
+        rating: rating,
+      };
+
+      const newReviewKey = push(child(ref(db), path)).key;
+      const updates = {};
+      updates[path + '/' + newReviewKey] = review;
+
+      return update(ref(db), updates);
+    } catch (e) {
+      console.log(e);
+    }
   }
 
   return (
@@ -72,15 +114,21 @@ export const FirebaseProvider = ({ children }) => {
       value={{
         user,
         setUser,
-        login: async (email, password) => {
+        login: async (email, password, navigation) => {
           try {
-            await signInWithEmailAndPassword(auth, email, password);
+            await signInWithEmailAndPassword(auth, email, password).then(() => {
+              ToastAndroid.show("Welcome Back!", ToastAndroid.SHORT)
+              navigation.navigate('Shop');
+            })
+              .catch((error) => {
+                ToastAndroid.show("Incorrect Credentials", ToastAndroid.SHORT)
+              });
           } catch (e) {
             console.log(e);
           }
         },
 
-        signUp: async (email, password, username) => {
+        signUp: async (email, password, username, navigation) => {
           try {
             await createUserWithEmailAndPassword(auth, email, password)
               .then(() => {
@@ -88,6 +136,8 @@ export const FirebaseProvider = ({ children }) => {
                   .catch(error => {
                     console.log('Error encountered while saving account info to Firebase: ', error);
                   })
+                ToastAndroid.show("Successfully Created Account", ToastAndroid.SHORT)
+                navigation.navigate('Shop');
               })
               .catch(error => {
                 console.log('Failed while creating new account: ', error);
@@ -107,7 +157,23 @@ export const FirebaseProvider = ({ children }) => {
 
         addToCart: async (selectedItem, selectedSize, selectedQuantity) => {
           try {
-            await addToCart(selectedItem, selectedSize, selectedQuantity);
+            await addItemToCart(selectedItem, selectedSize, selectedQuantity);
+          } catch (e) {
+            console.log(e);
+          }
+        },
+
+        updateCart: async (item) => {
+          try {
+            await updateCartItem(item);
+          } catch (e) {
+            console.log(e);
+          }
+        },
+
+        submitUserReview: async (item, inputText, rating) => {
+          try {
+            await submitReview(item, inputText, rating);
           } catch (e) {
             console.log(e);
           }
