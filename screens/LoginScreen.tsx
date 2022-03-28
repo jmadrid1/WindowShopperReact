@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import {
     StatusBar, View, TouchableOpacity, Image, Text, TextInput,
-    StyleSheet, Dimensions, ToastAndroid, BackHandler
+    StyleSheet, Dimensions, BackHandler
 } from 'react-native';
 import logo from '../assets/ic_windowshopper_transparent.png';
 import BackButton from '../components/backButton/BackButton';
@@ -22,7 +22,7 @@ export const LoginScreen = (props: IProps) => {
     const [isEmailValidated, setEmailAsValidated] = useState(false)
     const [password, setPassword] = useState('');
     const [isPasswordValidated, setPasswordAsValidated] = useState(false)
-    const [isPasswordPrivate, setPasswordPrivate] = useState(false)
+    const [isPasswordVisible, setPasswordAsVisible] = useState(false)
     const [isLoginButtonEnabled, setLoginButtonAsEnabled] = useState(false)
     const { login } = useContext(FirebaseContext);
 
@@ -36,9 +36,7 @@ export const LoginScreen = (props: IProps) => {
     }, [])
 
     const signIn = (email, password) => {
-        login(email, password)
-        navigation.navigate('Shop');
-        ToastAndroid.show("Successfully Logged In", ToastAndroid.SHORT)
+        login(email, password, navigation)
     }
 
     const onEmailTextChange = (text) => {
@@ -56,7 +54,7 @@ export const LoginScreen = (props: IProps) => {
     }
 
     const onPasswordTextChange = (text) => {
-        if (text.length < 6) {
+        if (text.length < 5) {
             setLoginButtonAsEnabled(false)
             setPasswordAsValidated(false)
         } else {
@@ -78,7 +76,7 @@ export const LoginScreen = (props: IProps) => {
                     <Image style={styles.logo} source={logo} />
                 </View>
                 <TextInput style={styles.textInput} keyboardType='email-address' placeholder='Email' autoCapitalize='none' keyboardType='email-address' onChangeText={(text) => onEmailTextChange(text)} />
-                <PasswordForm isPasswordPrivate={isPasswordPrivate} placeholder={'Password'} value={password} onChange={onPasswordTextChange} setPasswordPrivate={setPasswordPrivate} />
+                <PasswordForm isPasswordVisible={isPasswordVisible} placeholder={'Password'} value={password} onChange={onPasswordTextChange} setPasswordAsVisible={setPasswordAsVisible} />
                 <RoundedButton enabled={isLoginButtonEnabled} buttonText='Sign In' buttonTextColor='black' buttonColor='white' onPress={() => signIn(email, password)} />
                 <TouchableOpacity style={styles.createAccountButton} onPress={() => navigation.navigate('CreateAccount')} >
                     <Text style={styles.createAccountButtonText}>Create Account</Text>
