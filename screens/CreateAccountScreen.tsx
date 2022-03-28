@@ -21,8 +21,8 @@ export const CreateAccountScreen = (props: IProps) => {
     const [isPasswordValidated, setPasswordAsValidated] = useState(false)
     const [confirmPassword, setConfirmPassword] = useState('');
     const [isConfirmPasswordValidated, setConfirmPasswordAsValidated] = useState(false)
-    const [isPasswordPrivate, setPasswordPrivate] = useState(false)
-    const [isConfirmPasswordPrivate, setConfirmPasswordPrivate] = useState(false)
+    const [isPasswordVisible, setPasswordAsVisible] = useState(false)
+    const [isConfirmPasswordVisible, setConfirmPasswordAsVisible] = useState(false)
     const [isSignUpButtonEnabled, setSignUpButtonEnabled] = useState(false)
     const { signUp } = useContext(FirebaseContext);
 
@@ -77,10 +77,8 @@ export const CreateAccountScreen = (props: IProps) => {
         setConfirmPassword(text)
     }
 
-    const createAccount = (email, password) => {
-        signUp(email, password, username)
-        navigation.navigate('Shop');
-        ToastAndroid.show("Successfully Created Account", ToastAndroid.SHORT)
+    const createAccount = (email, password, navigate) => {
+        signUp(email, password, username, navigate)
     }
 
     return (
@@ -92,10 +90,10 @@ export const CreateAccountScreen = (props: IProps) => {
             </View>
             <TextInput style={{ ...styles.textInput, marginBottom: 40, marginTop: 40 }} placeholder='Username' onChangeText={(text) => setUserName(text)} />
             <TextInput style={{ ...styles.textInput, marginBottom: 40 }} keyboardType='email-address' placeholder='Email' autoCapitalize='none' keyboardType='email-address' onChangeText={(text) => onEmailTextChange(text)} />
-            <PasswordForm isPasswordPrivate={isPasswordPrivate} placeholder={'Password'} value={password} onChange={onPasswordTextChange} setPasswordPrivate={setPasswordPrivate} />
+            <PasswordForm isPasswordVisible={isPasswordVisible} placeholder={'Password'} value={password} onChange={onPasswordTextChange} setPasswordAsVisible={setPasswordAsVisible} />
             <Text style={styles.passwordRequirementText}>Password must be 6 characters long</Text>
-            <PasswordForm isPasswordPrivate={isConfirmPasswordPrivate} placeholder={'Confirm Password'} value={confirmPassword} onChange={onConfirmPasswordTextChange} setPasswordPrivate={setConfirmPasswordPrivate} />
-            <TouchableOpacity style={isSignUpButtonEnabled ? styles.enabledButton : styles.disabledButton} disabled={false} onPress={() => createAccount(email, password)} >
+            <PasswordForm isPasswordVisible={isConfirmPasswordVisible} placeholder={'Confirm Password'} value={confirmPassword} onChange={onConfirmPasswordTextChange} setConfirmPasswordAsVisible={setConfirmPasswordAsVisible} />
+            <TouchableOpacity style={isSignUpButtonEnabled ? styles.enabledButton : styles.disabledButton} disabled={!isSignUpButtonEnabled} onPress={() => createAccount(email, password, navigation)} >
                 <Text style={isSignUpButtonEnabled ? styles.enabledButtonText : styles.disabledButtonText} >Sign Up</Text>
             </TouchableOpacity>
         </View>
@@ -143,24 +141,7 @@ const styles = StyleSheet.create({
         paddingTop: StatusBar.currentHeight
     },
 
-    enabledButton: {
-        width: width - 120,
-        height: 50,
-        backgroundColor: 'white',
-        borderRadius: 30,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 40
-    },
-
-    enabledButtonText: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        margin: 10,
-        color: 'black',
-    },
-
+    
     disabledButton: {
         width: width - 120,
         height: 50,
@@ -177,6 +158,24 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         margin: 10,
         color: '#c7c7c7',
+    },
+
+    enabledButton: {
+        width: width - 120,
+        height: 50,
+        backgroundColor: 'white',
+        borderRadius: 30,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 40
+    },
+
+    enabledButtonText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        margin: 10,
+        color: 'black',
     },
 
     logo: {
