@@ -14,6 +14,19 @@ interface IProps {
     route: any;
 }
 
+/**
+ * @param {{ 
+ * navigation: any,
+ * route: any,
+ * }} props 
+ * @returns
+ */
+
+/**
+ * ShopScreen displays the retail items available in the application.
+ * This screen is passed React's navigation & route as props for navigating between screens 
+ * and passing data.
+ */
 export const ShopScreen = (props: IProps) => {
     const { navigation } = props;
     const [items, setItems] = useState<Item[]>([]);
@@ -31,6 +44,7 @@ export const ShopScreen = (props: IProps) => {
         return () => BackHandler.removeEventListener("hardwareBackPress", onBackPress)
     }, [])
 
+    //Fetches retail items from Firebase Database
     const getClothes = async () => {
         setLoading(true)
         let itemList: Item[] = [];
@@ -86,7 +100,8 @@ export const ShopScreen = (props: IProps) => {
                             renderItem={renderItem}
                         />
                     }
-                </View>) : (
+                </View>
+                ) : (
                 <View style={styles.container}>
                     <View style={styles.innerContainer}>
                         <AnimationView option={1} />
