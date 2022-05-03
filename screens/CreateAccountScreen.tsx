@@ -12,6 +12,19 @@ interface IProps {
     route: any;
 }
 
+/**
+ * @param {{ 
+ * navigation: any,
+ * route: any,
+ * }} props 
+ * @returns
+ */
+
+/**
+ * CreateAccountScreen new users can use this screen to create accounts.
+ * This screen is passed React's navigation & route as props for navigating between screens 
+ * and passing data.
+ */
 export const CreateAccountScreen = (props: IProps) => {
     const { navigation } = props;
     const [username, setUserName] = useState('');
@@ -26,6 +39,7 @@ export const CreateAccountScreen = (props: IProps) => {
     const [isSignUpButtonEnabled, setSignUpButtonEnabled] = useState(false)
     const { signUp } = useContext(FirebaseContext);
 
+    //popAction for backstepping 1 screen
     const popAction = StackActions.pop(1);
 
     useEffect(() => {
@@ -37,6 +51,7 @@ export const CreateAccountScreen = (props: IProps) => {
         return () => BackHandler.removeEventListener("hardwareBackPress", onBackPress)
     }, [])
 
+    //Validates email address upon text change
     const onEmailTextChange = (text) => {
         let emailReg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w\w+)+$/;
         if (emailReg.test(text)) {
@@ -51,6 +66,7 @@ export const CreateAccountScreen = (props: IProps) => {
         setEmail(text)
     }
 
+    //Validates password upon text change
     const onPasswordTextChange = (text) => {
         if (text.length < 6) {
             setSignUpButtonEnabled(false)
@@ -64,6 +80,7 @@ export const CreateAccountScreen = (props: IProps) => {
         setPassword(text)
     }
 
+    //Validates confirmPassword upon text change
     const onConfirmPasswordTextChange = (text) => {
         if (text.length < 6 || password.length < 6 ) {
             setSignUpButtonEnabled(false)
@@ -77,6 +94,7 @@ export const CreateAccountScreen = (props: IProps) => {
         setConfirmPassword(text)
     }
 
+    //Create a new account for user
     const createAccount = (email, password, navigate) => {
         signUp(email, password, username, navigate)
     }
