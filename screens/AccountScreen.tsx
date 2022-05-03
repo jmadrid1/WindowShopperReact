@@ -17,6 +17,18 @@ interface IProps {
     route: any;
 }
 
+/**
+ * @param {{ 
+ * navigation: any,
+ * route: any
+ * }} props 
+ * @returns
+ */
+
+/**
+ * AccountScreen displays the user's information. User can also sign out of application here.
+ * This screen is passed React's navigation & route as props for navigating between screens and passing data.
+ */
 export const AccountScreen = (props: IProps) => {
     const { navigation } = props;
     const [account, setAccount] = useState<Account>();
@@ -34,6 +46,7 @@ export const AccountScreen = (props: IProps) => {
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    //Fetches signed in user's account information
     const getAccountInfo = () => {
         let KEY_USERS = FirebaseDatabase.usersKey;
         let USER_ID = user.uid
@@ -52,6 +65,7 @@ export const AccountScreen = (props: IProps) => {
         });
     }
 
+    //Signs out user
     const signOut = () => {
         logout();
         navigation.navigate('Shop');
