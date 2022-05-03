@@ -16,6 +16,19 @@ interface IProps {
     route: any;
 }
 
+/**
+ * @param {{ 
+ * navigation: any,
+ * route: any,
+ * }} props 
+ * @returns
+ */
+
+/**
+ * CartScreen signed in users can use this screen to view their cart items.
+ * This screen is passed React's navigation & route as props for navigating between screens 
+ * and passing data.
+ */
 export const CartScreen = (props: IProps) => {
     const { navigation } = props;
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -33,6 +46,7 @@ export const CartScreen = (props: IProps) => {
 
     initializeApp(firebaseConfig);
 
+    //Fetches cart items for signed user
     const getCartItems = async () => {
         setIsLoading(true)
         let cartList: CartItem[] = [];
@@ -82,8 +96,12 @@ export const CartScreen = (props: IProps) => {
         });
     }
 
+    //totalPrice for the cart items
     let totalPrice = cartItems.map((item) => item.price * item.quantity).reduce((prev, curr) => prev + curr, 0).toFixed(2);
+    //totalPrice converted as a string for use
     let priceString = String(totalPrice);
+
+    //# of totalItems of cart items
     let totalItems = cartItems.map((item) => item.quantity).reduce((prev, curr) => prev + curr, 0);
 
     return (
