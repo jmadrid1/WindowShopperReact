@@ -14,6 +14,21 @@ type IProps = {
     setPasswordAsVisible: Dispatch<SetStateAction<boolean>>;
 }
 
+/**
+ * @param {{ 
+ * placeholder: string,
+ * value: string,
+ * onChange: (text) => void,
+ * isPasswordVisible: boolean,
+ * setPasswordAsVisible: Dispatch<SetStateAction<boolean>>
+ * }} props 
+ * @returns
+ */
+
+/**
+ * PasswordForm is TextInput for inputting a password. Password can also be made visible
+ * for viewing text characters entered.
+ */
 const PasswordForm = (props: IProps) => {
     const { placeholder, value, onChange, isPasswordVisible, setPasswordAsVisible } = props;
 
